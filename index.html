@@ -3,118 +3,152 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HOI‑Lite 5×5 Map</title>
+  <title>WW1 Hex Map</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
-    body { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 1rem; }
-    #grid { display: grid; grid-template-columns: repeat(5, 80px); grid-template-rows: repeat(5, 80px); gap: 2px; }
-    .tile { display:flex; flex-direction:column; justify-content:center; align-items:center; border: 1px solid #444; cursor: pointer; background:#ddd; border-radius:4px; transition: transform 0.1s ease; }
-    .tile:hover { transform: scale(1.05); }
-    .country-label { font-size: 0.65rem; line-height: 1rem; text-align: center; word-break: break-word; }
-    .troops { font-weight: 700; }
-    #controls { display:flex; gap:0.5rem; }
-    button { padding:0.4rem 0.8rem; border:none; border-radius:6px; background:#333; color:#fff; cursor:pointer; transition:background 0.15s ease; }
-    button:hover { background:#555; }
-    input[type="file"] { display:none; }
+    body { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 1rem; background-color: #f3f3f3; }
+    h1 { margin-bottom: 0.5rem; }
+
+    #map {
+      display: grid;
+      grid-template-columns: repeat(10, 90px);
+      gap: 2px;
+    }
+
+    .hex {
+      width: 90px;
+      height: 78px;
+      background-color: #ccc;
+      clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: black;
+      font-size: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    .hex:hover {
+      transform: scale(1.05);
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 5px;
+      background-color: #333;
+      color: white;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    input[type="file"] { display: none; }
   </style>
 </head>
 <body>
-  <h1>HOI‑Lite 5×5 Interactive Map</h1>
-
-  <div id="grid"></div>
-
-  <div id="controls">
+  <h1>WW1 Hex-Based Interactive Map</h1>
+  <div id="map"></div>
+  <div>
     <button id="downloadBtn">Download JSON</button>
-    <label for="upload" style="background:#0077cc;">Load JSON<input id="upload" type="file" accept="application/json" /></label>
+    <label style="background:#0077cc; padding:0.5rem 1rem; color:#fff; border-radius:5px; cursor:pointer;">
+      Load JSON<input type="file" id="upload" accept="application/json" />
+    </label>
   </div>
 
-<script>
-const COLORS = {
-  Neutral: '#dddddd',
-  Germany: '#222',
-  France: '#0055a4',
-  Britain: '#cc0000',
-  Russia: '#0039a6',
-  USA: '#3c3b6e',
-};
-
-const gridElement = document.getElementById('grid');
-const state = { tiles: [] };
-
-// Initialize tiles
-for (let r = 0; r < 5; r++) {
-  for (let c = 0; c < 5; c++) {
-    const index = r * 5 + c;
-    state.tiles[index] = {
-      id: `${String.fromCharCode(65 + r)}${c + 1}`,
-      owner: 'Neutral',
-      troops: 0,
-      battlefield: '',
+  <script>
+    const COLORS = {
+      Neutral: '#dddddd',
+      Germany: '#333',
+      France: '#0055a4',
+      UK: '#cc0000',
+      Russia: '#0039a6',
+      USA: '#3c3b6e',
+      Austria: '#7f0000',
+      Ottoman: '#a66',
+      Italy: '#008000',
+      Japan: '#bc002d',
     };
-    const div = document.createElement('div');
-    div.className = 'tile';
-    div.dataset.index = index;
-    updateTileVisual(div, state.tiles[index]);
-    div.addEventListener('click', () => editTile(index, div));
-    gridElement.appendChild(div);
-  }
-}
 
-function editTile(idx, element) {
-  const tile = state.tiles[idx];
-  const owner = prompt('Owner nation?', tile.owner) || tile.owner;
-  const troops = parseInt(prompt('Troop count?', tile.troops) || tile.troops, 10);
-  const battlefield = prompt('Linked battlefield/map?', tile.battlefield) || tile.battlefield;
-  tile.owner = owner;
-  tile.troops = isNaN(troops) ? tile.troops : troops;
-  tile.battlefield = battlefield;
-  updateTileVisual(element, tile);
-}
+    const hexMap = document.getElementById('map');
+    const state = { tiles: [] };
+    const numCols = 10;
+    const numRows = 8;
 
-function updateTileVisual(el, tile) {
-  el.style.background = COLORS[tile.owner] || '#999';
-  el.innerHTML = `
-    <div class="country-label">${tile.id}<br>${tile.owner}</div>
-    <div class="troops">${tile.troops}</div>
-  `;
-}
+    const regionNames = [
+      "USA East", "USA Midwest", "USA West", "Canada", "Mexico", "UK", "France North", "France South", "Belgium", "Germany North",
+      "Germany South", "Austria", "Italy", "Russia West", "Russia Central", "Russia East", "Balkans", "Ottoman West", "Ottoman East", "North Africa",
+      "Egypt", "Persia", "India", "China", "Japan", "Korea", "SE Asia", "Australia", "South Africa", "Brazil",
+      "Argentina", "Spain", "Portugal", "Norway", "Sweden", "Finland", "Caucasus", "Siberia", "Arabia", "Palestine",
+      "Iraq", "Central Asia", "Serbia", "Greece", "Romania", "Morocco", "Algeria", "Tunisia", "Libya", "Sudan",
+      "Manchuria", "Indochina", "New Zealand", "Philippines", "Hawaii", "Panama", "Cuba", "Colombia", "Chile", "Peru"
+    ];
 
-// Download JSON
-const downloadBtn = document.getElementById('downloadBtn');
-downloadBtn.addEventListener('click', () => {
-  const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(state, null, 2));
-  const a = document.createElement('a');
-  a.href = dataStr;
-  a.download = 'map-state.json';
-  a.click();
-});
+    for (let i = 0; i < regionNames.length; i++) {
+      const tile = {
+        id: i,
+        name: regionNames[i],
+        owner: 'Neutral',
+        troops: 0,
+        battlefield: ''
+      };
+      state.tiles.push(tile);
 
-// Load JSON
-const uploadInput = document.getElementById('upload');
-uploadInput.addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (evt) => {
-    try {
-      const loaded = JSON.parse(evt.target.result);
-      if (loaded.tiles && loaded.tiles.length === 25) {
-        state.tiles = loaded.tiles;
-        // refresh visuals
-        [...document.querySelectorAll('.tile')].forEach((tileEl) => {
-          const i = tileEl.dataset.index;
-          updateTileVisual(tileEl, state.tiles[i]);
-        });
-      } else {
-        alert('Invalid file format.');
-      }
-    } catch (err) {
-      alert('Failed to parse JSON.');
+      const hex = document.createElement('div');
+      hex.className = 'hex';
+      hex.dataset.index = i;
+      updateHexVisual(hex, tile);
+      hex.addEventListener('click', () => editTile(i, hex));
+      hexMap.appendChild(hex);
     }
-  };
-  reader.readAsText(file);
-});
-</script>
+
+    function editTile(idx, element) {
+      const tile = state.tiles[idx];
+      const owner = prompt('Owner nation?', tile.owner) || tile.owner;
+      const troops = parseInt(prompt('Troop count?', tile.troops) || tile.troops, 10);
+      const battlefield = prompt('Linked battlefield/map?', tile.battlefield) || tile.battlefield;
+      tile.owner = owner;
+      tile.troops = isNaN(troops) ? tile.troops : troops;
+      tile.battlefield = battlefield;
+      updateHexVisual(element, tile);
+    }
+
+    function updateHexVisual(el, tile) {
+      el.style.background = COLORS[tile.owner] || '#999';
+      el.innerHTML = `<strong>${tile.name}</strong><br>${tile.owner}<br>Troops: ${tile.troops}`;
+    }
+
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(state, null, 2));
+      const a = document.createElement('a');
+      a.href = dataStr;
+      a.download = 'hex-map-state.json';
+      a.click();
+    });
+
+    document.getElementById('upload').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        try {
+          const loaded = JSON.parse(evt.target.result);
+          if (loaded.tiles && loaded.tiles.length === state.tiles.length) {
+            state.tiles = loaded.tiles;
+            const allHexes = document.querySelectorAll('.hex');
+            allHexes.forEach((el, i) => updateHexVisual(el, state.tiles[i]));
+          } else {
+            alert('Invalid tile data');
+          }
+        } catch {
+          alert('Could not read JSON');
+        }
+      };
+      reader.readAsText(file);
+    });
+  </script>
 </body>
 </html>
