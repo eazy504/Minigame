@@ -3,205 +3,107 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WW1 Hex Map - Zoom & Pan</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
+  <title>WW1 Realistic Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
-    * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
-    body { margin: 0; padding: 1rem; background: #eef2f5; text-align: center; overflow: hidden; }
-    h1 { margin-bottom: 1rem; }
-
-    #container {
+    body, html {
+      margin: 0;
+      height: 100%;
       width: 100%;
-      height: 90vh;
-      overflow: hidden;
-      border: 2px solid #ccc;
-      position: relative;
-      cursor: grab;
+      font-family: Arial, sans-serif;
     }
-
     #map {
-      position: absolute;
-      transform-origin: top left;
-      user-select: none;
+      height: 100vh;
+      width: 100vw;
     }
-
-    .hex {
-      position: absolute;
-      width: 90px;
-      height: 78px;
-      clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
-      background: #ccc;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 4px;
-      font-size: 11px;
-      word-break: break-word;
-      text-align: center;
-      cursor: pointer;
-      transition: transform 0.1s ease;
-    }
-
-    .hex:hover {
-      transform: scale(1.05);
-    }
-
-    button {
-      margin-top: 1rem;
-      padding: 0.5rem 1rem;
-      border: none;
-      border-radius: 4px;
-      background-color: #333;
-      color: white;
-      cursor: pointer;
-    }
-
-    input[type="file"] { display: none; }
   </style>
 </head>
 <body>
-  <h1>WW1 Hex Map (Zoom + Pan Enabled)</h1>
-  <div id="container">
-    <div id="map"></div>
-  </div>
-  <div>
-    <button id="downloadBtn">Download JSON</button>
-    <label style="background:#0077cc; padding:0.5rem 1rem; color:#fff; border-radius:5px; cursor:pointer;">
-      Load JSON<input type="file" id="upload" accept="application/json" />
-    </label>
-  </div>
+  <div id="map"></div>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    const COLORS = {
-      Albania: '#a0522d', Argentina: '#708090', Australia: '#2e8b57', Brazil: '#32cd32',
-      Canada: '#d2691e', Chile: '#dc143c', China: '#deb887', Ethiopia: '#8b4513',
-      Greece: '#4169e1', Montenegro: '#556b2f', Norway: '#4682b4', Persia: '#a9a9a9',
-      Portugal: '#b22222', Siam: '#daa520', Spain: '#ff6347', Sweden: '#1e90ff',
-      Switzerland: '#fa8072', SouthAfrica: '#20b2aa', Mexico: '#9acd32', Belgium: '#f5cc00',
-      Neutral: '#dddddd', Germany: '#333', France: '#0055a4', UK: '#cc0000', Russia: '#0039a6',
-      USA: '#3c3b6e', Austria: '#7f0000', Ottoman: '#a66', Italy: '#008000', Japan: '#bc002d',
-      Serbia: '#0077be', Romania: '#c63', Bulgaria: '#884ea0', Netherlands: '#ff9900',
-      Denmark: '#e60026', Ocean: '#99ccee'
+    const map = L.map('map').setView([20, 0], 2);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    const geojsonData = {
+      "type": "FeatureCollection",
+      "features": [
+        {
+          "type": "Feature",
+          "properties": {
+            "name": "France",
+            "owner": "France",
+            "troops": 20000
+          },
+          "geometry": {
+            "type": "Polygon",
+            "coordinates": [[[2.0, 51.0], [3.0, 51.0], [3.0, 50.0], [2.0, 50.0], [2.0, 51.0]]]
+          }
+        },
+        {
+          "type": "Feature",
+          "properties": {
+            "name": "Germany",
+            "owner": "Germany",
+            "troops": 25000
+          },
+          "geometry": {
+            "type": "Polygon",
+            "coordinates": [[[10.0, 52.0], [11.0, 52.0], [11.0, 51.0], [10.0, 51.0], [10.0, 52.0]]]
+          }
+        }
+      ]
     };
 
-    const map = document.getElementById('map');
-    const container = document.getElementById('container');
-    const state = { tiles: [], scale: 1, translateX: 0, translateY: 0 };
+    function onEachFeature(feature, layer) {
+      layer.bindPopup(`
+        <b>${feature.properties.name}</b><br>
+        Owner: ${feature.properties.owner}<br>
+        Troops: ${feature.properties.troops}
+      `);
 
-    const HEX_WIDTH = 90;
-    const HEX_HEIGHT = 78;
-    const HEX_HORIZ_OFFSET = HEX_WIDTH * 0.75;
-
-    const tileData = [];
-    for (let x = 0; x < 30; x++) {
-      for (let y = 0; y < 20; y++) {
-        tileData.push({
-          name: `(${x},${y})`,
-          owner: 'Neutral',
-          x,
-          y
-        });
-      }
+      layer.on('click', () => {
+        const newOwner = prompt('New owner:', feature.properties.owner);
+        const newTroops = parseInt(prompt('New troop count:', feature.properties.troops), 10);
+        if (newOwner) feature.properties.owner = newOwner;
+        if (!isNaN(newTroops)) feature.properties.troops = newTroops;
+        layer.setStyle({ fillColor: getColor(newOwner) });
+        layer.bindPopup(`
+          <b>${feature.properties.name}</b><br>
+          Owner: ${feature.properties.owner}<br>
+          Troops: ${feature.properties.troops}
+        `).openPopup();
+      });
     }
 
-    tileData.forEach((tile, i) => {
-      state.tiles[i] = { ...tile, troops: 0, battlefield: '' };
-      const hex = document.createElement('div');
-      hex.className = 'hex';
-      hex.dataset.index = i;
-
-      const xOffset = tile.x * HEX_HORIZ_OFFSET;
-      const yOffset = tile.y * HEX_HEIGHT * 0.85 + (tile.x % 2 === 0 ? 0 : HEX_HEIGHT * 0.425);
-
-      hex.style.left = `${xOffset}px`;
-      hex.style.top = `${yOffset}px`;
-
-      updateHexVisual(hex, tile);
-      hex.addEventListener('click', () => editTile(i, hex));
-      map.appendChild(hex);
-    });
-
-    function updateHexVisual(el, tile) {
-      el.style.background = COLORS[tile.owner] || '#999';
-      el.innerHTML = `<strong>${tile.name}</strong><br>${tile.owner}<br>Troops: ${tile.troops}`;
-    }
-
-    function editTile(idx, element) {
-      const tile = state.tiles[idx];
-      const owner = prompt('Owner nation?', tile.owner) || tile.owner;
-      const troops = parseInt(prompt('Troop count?', tile.troops) || tile.troops, 10);
-      const battlefield = prompt('Linked battlefield/map?', tile.battlefield) || tile.battlefield;
-      tile.owner = owner;
-      tile.troops = isNaN(troops) ? tile.troops : troops;
-      tile.battlefield = battlefield;
-      updateHexVisual(element, tile);
-    }
-
-    // Zoom and pan
-    let isPanning = false;
-    let startX, startY;
-
-    container.addEventListener('mousedown', (e) => {
-      isPanning = true;
-      startX = e.clientX - state.translateX;
-      startY = e.clientY - state.translateY;
-      container.style.cursor = 'grabbing';
-    });
-
-    container.addEventListener('mouseup', () => {
-      isPanning = false;
-      container.style.cursor = 'grab';
-    });
-
-    container.addEventListener('mouseleave', () => {
-      isPanning = false;
-      container.style.cursor = 'grab';
-    });
-
-    container.addEventListener('mousemove', (e) => {
-      if (!isPanning) return;
-      state.translateX = e.clientX - startX;
-      state.translateY = e.clientY - startY;
-      map.style.transform = `translate(${state.translateX}px, ${state.translateY}px) scale(${state.scale})`;
-    });
-
-    container.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      const scaleAmount = -e.deltaY * 0.001;
-      state.scale += scaleAmount;
-      state.scale = Math.min(Math.max(0.5, state.scale), 3);
-      map.style.transform = `translate(${state.translateX}px, ${state.translateY}px) scale(${state.scale})`;
-    });
-
-    document.getElementById('downloadBtn').addEventListener('click', () => {
-      const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(state, null, 2));
-      const a = document.createElement('a');
-      a.href = dataStr;
-      a.download = 'hex-earth-expanded.json';
-      a.click();
-    });
-
-    document.getElementById('upload').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        try {
-          const loaded = JSON.parse(evt.target.result);
-          if (loaded.tiles && loaded.tiles.length === state.tiles.length) {
-            state.tiles = loaded.tiles;
-            const allHexes = document.querySelectorAll('.hex');
-            allHexes.forEach((el, i) => updateHexVisual(el, state.tiles[i]));
-          } else {
-            alert('Invalid tile data');
-          }
-        } catch {
-          alert('Could not read JSON');
-        }
+    function getColor(owner) {
+      const colors = {
+        France: '#0055a4',
+        Germany: '#333333',
+        UK: '#cc0000',
+        Russia: '#0039a6',
+        Austria: '#7f0000',
+        Ottoman: '#a66',
+        Italy: '#008000',
+        Japan: '#bc002d'
       };
-      reader.readAsText(file);
-    });
+      return colors[owner] || '#999';
+    }
+
+    L.geoJSON(geojsonData, {
+      style: feature => ({
+        fillColor: getColor(feature.properties.owner),
+        fillOpacity: 0.6,
+        color: '#000',
+        weight: 1
+      }),
+      onEachFeature: onEachFeature
+    }).addTo(map);
   </script>
 </body>
 </html>
+
