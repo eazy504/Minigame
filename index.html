@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WW1 Hex Map - Expanded Earth Layout</title>
+  <title>WW1 Hex Map - Ocean Regions</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
@@ -12,8 +12,8 @@
 
     #map {
       position: relative;
-      width: 1400px;
-      height: 1000px;
+      width: 1600px;
+      height: 1100px;
       margin: 0 auto;
     }
 
@@ -53,7 +53,7 @@
   </style>
 </head>
 <body>
-  <h1>WW1 Hex Map (Expanded Earth Layout)</h1>
+  <h1>WW1 Hex Map (Realistic Ocean Layout)</h1>
   <div id="map"></div>
   <div>
     <button id="downloadBtn">Download JSON</button>
@@ -87,54 +87,31 @@
     const state = { tiles: [] };
 
     const tileData = [
+      // OCEAN REGIONS grouped as visual shapes
+      { name: 'North Atlantic', owner: 'Ocean', x: 4, y: 1 },
+      { name: 'North Atlantic', owner: 'Ocean', x: 5, y: 2 },
+      { name: 'South Atlantic', owner: 'Ocean', x: 4, y: 4 },
+      { name: 'South Atlantic', owner: 'Ocean', x: 5, y: 5 },
+      { name: 'Western Mediterranean', owner: 'Ocean', x: 6, y: 4 },
+      { name: 'Eastern Mediterranean', owner: 'Ocean', x: 7, y: 4.5 },
+      { name: 'Black Sea', owner: 'Ocean', x: 8.5, y: 3.5 },
+      { name: 'Baltic Sea', owner: 'Ocean', x: 8, y: 1.5 },
+      { name: 'Indian Ocean', owner: 'Ocean', x: 11, y: 5 },
+      { name: 'Indian Ocean', owner: 'Ocean', x: 12, y: 6 },
+      { name: 'North Pacific', owner: 'Ocean', x: 1, y: 1 },
+      { name: 'South Pacific', owner: 'Ocean', x: 2, y: 6 },
+      { name: 'Arctic Ocean', owner: 'Ocean', x: 10, y: 0 },
+
+      // Keep example land tiles
       { name: 'USA West', owner: 'USA', x: 1, y: 2 },
       { name: 'USA East', owner: 'USA', x: 3, y: 2 },
-      { name: 'Mexico', owner: 'Neutral', x: 2, y: 3 },
-      { name: 'Canada', owner: 'UK', x: 2, y: 1 },
-      { name: 'Brazil', owner: 'Neutral', x: 4, y: 5 },
-      { name: 'Argentina', owner: 'Neutral', x: 3, y: 6 },
       { name: 'UK', owner: 'UK', x: 6, y: 1 },
       { name: 'France North', owner: 'France', x: 6, y: 2 },
-      { name: 'France South', owner: 'France', x: 6, y: 3 },
-      { name: 'Belgium', owner: 'Belgium', x: 6, y: 2.5 },
       { name: 'Germany North', owner: 'Germany', x: 7, y: 2 },
-      { name: 'Germany South', owner: 'Germany', x: 7, y: 3 },
-      { name: 'Netherlands', owner: 'Netherlands', x: 6.5, y: 1.5 },
-      { name: 'Denmark', owner: 'Denmark', x: 7.5, y: 1 },
-      { name: 'Austria', owner: 'Austria', x: 8, y: 2 },
-      { name: 'Italy', owner: 'Italy', x: 7, y: 4 },
-      { name: 'Spain', owner: 'Neutral', x: 5, y: 3 },
-      { name: 'Portugal', owner: 'Neutral', x: 5, y: 4 },
-      { name: 'Switzerland', owner: 'Neutral', x: 6.5, y: 3.2 },
-      { name: 'Serbia', owner: 'Serbia', x: 8, y: 2.5 },
-      { name: 'Romania', owner: 'Romania', x: 9, y: 2.5 },
-      { name: 'Bulgaria', owner: 'Bulgaria', x: 8.5, y: 3 },
-      { name: 'Ottoman West', owner: 'Ottoman', x: 9, y: 3.5 },
-      { name: 'Ottoman East', owner: 'Ottoman', x: 10, y: 4 },
       { name: 'Russia West', owner: 'Russia', x: 9, y: 2 },
-      { name: 'Russia Central', owner: 'Russia', x: 10, y: 2 },
-      { name: 'Russia East', owner: 'Russia', x: 11, y: 2 },
-      { name: 'India', owner: 'UK', x: 12, y: 3 },
-      { name: 'China', owner: 'Neutral', x: 13, y: 3 },
-      { name: 'Japan', owner: 'Japan', x: 14, y: 2 },
-      { name: 'Egypt', owner: 'UK', x: 8, y: 4 },
-      { name: 'North Africa', owner: 'France', x: 7, y: 4 },
-      { name: 'South Africa', owner: 'UK', x: 8, y: 6 },
-      { name: 'Norway', owner: 'Neutral', x: 7, y: 1 },
-      { name: 'Sweden', owner: 'Neutral', x: 8, y: 1 },
-      { name: 'Finland', owner: 'Russia', x: 9, y: 1 },
-
-      // Oceans & Seas
-      { name: 'North Atlantic', owner: 'Ocean', x: 4, y: 2 },
-      { name: 'South Atlantic', owner: 'Ocean', x: 4, y: 4 },
-      { name: 'Western Mediterranean', owner: 'Ocean', x: 6, y: 4 },
-      { name: 'Eastern Mediterranean', owner: 'Ocean', x: 8, y: 4.5 },
-      { name: 'Indian Ocean', owner: 'Ocean', x: 11, y: 4 },
-      { name: 'North Pacific', owner: 'Ocean', x: 2, y: 1 },
-      { name: 'South Pacific', owner: 'Ocean', x: 2, y: 5 },
-      { name: 'Arctic Ocean', owner: 'Ocean', x: 10, y: 0 },
-      { name: 'Black Sea', owner: 'Ocean', x: 9, y: 3 },
-      { name: 'Baltic Sea', owner: 'Ocean', x: 8, y: 1.5 }
+      { name: 'India', owner: 'UK', x: 12, y: 4 },
+      { name: 'China', owner: 'Neutral', x: 13, y: 4 },
+      { name: 'Japan', owner: 'Japan', x: 14, y: 3 }
     ];
 
     const HEX_WIDTH = 90;
@@ -179,7 +156,7 @@
       const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(state, null, 2));
       const a = document.createElement('a');
       a.href = dataStr;
-      a.download = 'hex-earth-map-expanded.json';
+      a.download = 'hex-earth-ocean-map.json';
       a.click();
     });
 
