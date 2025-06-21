@@ -1,13 +1,13 @@
 const map = L.map('map').setView([20, 0], 2);
 
-// Base layer (English labels)
+// Base map with English labels
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
   attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
   subdomains: 'abcd',
   maxZoom: 19
 }).addTo(map);
 
-// Load WW1 country data
+// Load country borders
 fetch('data/countries-1914.geojson')
   .then(res => res.json())
   .then(geojson => {
@@ -51,7 +51,6 @@ function onEachFeature(feature, layer) {
       </div>
     `).openPopup();
 
-    // Optional: populate research tree dynamically
     document.getElementById('research-content').innerHTML = `
       <h3>${feature.properties.name} - Research</h3>
       <ul>
@@ -77,8 +76,12 @@ function getColor(owner) {
   return colors[owner] || '#bfb0a3';
 }
 
-// Sidebar toggle
+// Toggle sidebar
 document.getElementById('toggle-sidebar').addEventListener('click', () => {
   const sidebar = document.getElementById('sidebar');
   sidebar.classList.toggle('open');
+  setTimeout(() => map.invalidateSize(), 300);
 });
+
+// Add terrain overlays
+addTerrainLayer(map);
