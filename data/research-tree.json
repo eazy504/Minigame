@@ -1,0 +1,18 @@
+{
+  "France": {
+    "Infantry": { "Level": 1, "Cost": 100 },
+    "Artillery": { "Level": 1, "Cost": 150 }
+  },
+  "Germany": {
+    "Infantry": { "Level": 1, "Cost": 100 },
+    "Tanks": { "Level": 0, "Cost": 300 }
+  },
+  "Austria": {
+    "Infantry": { "Level": 1, "Cost": 100 },
+    "Mountain Warfare": { "Level": 0, "Cost": 200 }
+  },
+  "Ottoman": {
+    "Infantry": { "Level": 1, "Cost": 100 },
+    "Desert Warfare": { "Level": 0, "Cost": 180 }
+  }
+}
