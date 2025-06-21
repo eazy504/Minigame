@@ -1,20 +1,19 @@
-/* Fullscreen map */
+/* Full-screen map */
 #map {
+  position: absolute;
   height: 100vh;
   width: 100vw;
   background-color: #f1e9d2;
   z-index: 1;
-  position: absolute;
 }
 
-/* Country label tooltips */
+/* Country labels */
 .country-label {
   font-size: 13px;
   font-weight: bold;
   color: #3a2e1e;
   text-shadow: 1px 1px 2px #f1e9d2;
   pointer-events: none;
-  text-align: center;
 }
 
 /* Popups */
@@ -42,12 +41,7 @@
   padding: 20px;
   z-index: 1000;
 }
-
-#sidebar.open {
-  right: 0;
-}
-
-/* Sidebar button */
+#sidebar.open { right: 0; }
 #toggle-sidebar {
   position: fixed;
   top: 15px;
