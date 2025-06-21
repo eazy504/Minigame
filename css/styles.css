@@ -1,37 +1,30 @@
-/* Fullscreen map container */
+/* Fullscreen map */
 #map {
   height: 100vh;
   width: 100vw;
-  margin: 0;
-  padding: 0;
-  background-color: #f1e9d2; /* Sepia backdrop */
+  background-color: #f1e9d2;
 }
 
-/* Country name tooltips (styled for vintage look) */
+/* Country tooltips */
 .country-label {
   font-size: 13px;
   font-weight: bold;
   color: #3a2e1e;
   text-shadow: 1px 1px 2px #f1e9d2;
-  background: transparent;
-  border: none;
-  box-shadow: none;
   pointer-events: none;
   text-align: center;
 }
 
-/* Popup styling for troop and ownership info */
+/* Popups */
 .leaflet-popup-content-wrapper {
   background-color: #f9f2e4;
   border-radius: 6px;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
   font-family: 'Georgia', serif;
   font-size: 14px;
   color: #3e2e21;
   padding: 6px;
 }
 
-/* Optional custom popup text block if used in JS */
 .popup {
   font-family: 'Georgia', serif;
   color: #3e2e21;
@@ -42,19 +35,37 @@
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
 }
 
-/* Optional: hide zoom control on mobile or style it */
-.leaflet-control-zoom {
-  top: 10px;
-  left: 10px;
+/* Sidebar */
+#sidebar {
+  position: fixed;
+  top: 0;
+  right: -300px;
+  width: 300px;
+  height: 100%;
+  background: #fcf5e6;
+  border-left: 2px solid #cbbfa1;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
+  transition: right 0.3s ease;
+  padding: 20px;
+  z-index: 1000;
 }
 
-/* Optional: Legend styles if added later */
-.legend {
-  background: #f9f2e4;
-  padding: 10px;
-  font-size: 12px;
+#sidebar.open {
+  right: 0;
+}
+
+#toggle-sidebar {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  z-index: 1100;
+  padding: 10px 16px;
+  font-size: 16px;
+  background-color: #a28c6a;
+  color: white;
+  border: none;
   border-radius: 6px;
-  line-height: 1.5em;
-  color: #3a2e1e;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  font-family: Georgia, serif;
 }
