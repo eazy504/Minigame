@@ -1,9 +1,13 @@
 const map = L.map('map').setView([20, 0], 2);
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '© OpenStreetMap contributors'
+// English-label base map (CartoDB Positron)
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+  subdomains: 'abcd',
+  maxZoom: 19
 }).addTo(map);
 
+// Load the 1914 country borders from GeoJSON
 fetch('data/countries-1914.geojson')
   .then(res => res.json())
   .then(geojson => {
@@ -18,12 +22,22 @@ fetch('data/countries-1914.geojson')
     }).addTo(map);
   });
 
+// Set popup and permanent label for each country
 function onEachFeature(feature, layer) {
   layer.bindPopup(`
     <b>${feature.properties.name}</b><br>
     Owner: ${feature.properties.owner}<br>
     Troops: ${feature.properties.troops}
   `);
+
+  // Permanent country name label
+  layer.bindTooltip(feature.properties.name, {
+    permanent: true,
+    direction: "center",
+    className: "country-label"
+  });
+
+  // Interaction for troop and ownership updates
   layer.on('click', () => {
     const newOwner = prompt('New owner?', feature.properties.owner);
     const newTroops = parseInt(prompt('New troop count?', feature.properties.troops), 10);
@@ -38,6 +52,7 @@ function onEachFeature(feature, layer) {
   });
 }
 
+// Color countries by owner
 function getColor(owner) {
   const colors = {
     France: '#0055a4',
