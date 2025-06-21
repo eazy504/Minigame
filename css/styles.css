@@ -4,14 +4,15 @@
   width: 100vw;
   margin: 0;
   padding: 0;
+  background-color: #f1e9d2; /* Sepia backdrop */
 }
 
-/* Make tooltips (country labels) always visible and centered */
+/* Country name tooltips (styled for vintage look) */
 .country-label {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: bold;
-  color: black;
-  text-shadow: 1px 1px 3px white;
+  color: #3a2e1e;
+  text-shadow: 1px 1px 2px #f1e9d2;
   background: transparent;
   border: none;
   box-shadow: none;
@@ -19,20 +20,41 @@
   text-align: center;
 }
 
-/* Optional: Style the Leaflet popup (on click) */
+/* Popup styling for troop and ownership info */
 .leaflet-popup-content-wrapper {
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  font-family: sans-serif;
+  background-color: #f9f2e4;
+  border-radius: 6px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+  font-family: 'Georgia', serif;
   font-size: 14px;
+  color: #3e2e21;
+  padding: 6px;
 }
 
-/* Optional: Style troop ownership colors (if extended) */
+/* Optional custom popup text block if used in JS */
+.popup {
+  font-family: 'Georgia', serif;
+  color: #3e2e21;
+  font-size: 14px;
+  background: #f9f2e4;
+  padding: 4px;
+  border-radius: 4px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Optional: hide zoom control on mobile or style it */
+.leaflet-control-zoom {
+  top: 10px;
+  left: 10px;
+}
+
+/* Optional: Legend styles if added later */
 .legend {
-  background: white;
+  background: #f9f2e4;
   padding: 10px;
   font-size: 12px;
-  border-radius: 5px;
+  border-radius: 6px;
   line-height: 1.5em;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+  color: #3a2e1e;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
 }
