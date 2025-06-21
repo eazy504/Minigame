@@ -3,18 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WW1 Hex Map - Ocean Regions</title>
+  <title>WW1 Hex Map - Zoom & Pan</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
-    body { margin: 0; padding: 1rem; background: #eef2f5; text-align: center; }
+    body { margin: 0; padding: 1rem; background: #eef2f5; text-align: center; overflow: hidden; }
     h1 { margin-bottom: 1rem; }
 
-    #map {
+    #container {
+      width: 100%;
+      height: 90vh;
+      overflow: hidden;
+      border: 2px solid #ccc;
       position: relative;
-      width: 1600px;
-      height: 1100px;
-      margin: 0 auto;
+      cursor: grab;
+    }
+
+    #map {
+      position: absolute;
+      transform-origin: top left;
+      user-select: none;
     }
 
     .hex {
@@ -53,8 +61,10 @@
   </style>
 </head>
 <body>
-  <h1>WW1 Hex Map (Realistic Ocean Layout)</h1>
-  <div id="map"></div>
+  <h1>WW1 Hex Map (Zoom + Pan Enabled)</h1>
+  <div id="container">
+    <div id="map"></div>
+  </div>
   <div>
     <button id="downloadBtn">Download JSON</button>
     <label style="background:#0077cc; padding:0.5rem 1rem; color:#fff; border-radius:5px; cursor:pointer;">
@@ -64,60 +74,36 @@
 
   <script>
     const COLORS = {
-      Neutral: '#dddddd',
-      Germany: '#333',
-      France: '#0055a4',
-      UK: '#cc0000',
-      Russia: '#0039a6',
-      USA: '#3c3b6e',
-      Austria: '#7f0000',
-      Ottoman: '#a66',
-      Italy: '#008000',
-      Japan: '#bc002d',
-      Belgium: '#f5cc00',
-      Serbia: '#0077be',
-      Romania: '#c63',
-      Bulgaria: '#884ea0',
-      Netherlands: '#ff9900',
-      Denmark: '#e60026',
-      Ocean: '#99ccee'
+      Albania: '#a0522d', Argentina: '#708090', Australia: '#2e8b57', Brazil: '#32cd32',
+      Canada: '#d2691e', Chile: '#dc143c', China: '#deb887', Ethiopia: '#8b4513',
+      Greece: '#4169e1', Montenegro: '#556b2f', Norway: '#4682b4', Persia: '#a9a9a9',
+      Portugal: '#b22222', Siam: '#daa520', Spain: '#ff6347', Sweden: '#1e90ff',
+      Switzerland: '#fa8072', SouthAfrica: '#20b2aa', Mexico: '#9acd32', Belgium: '#f5cc00',
+      Neutral: '#dddddd', Germany: '#333', France: '#0055a4', UK: '#cc0000', Russia: '#0039a6',
+      USA: '#3c3b6e', Austria: '#7f0000', Ottoman: '#a66', Italy: '#008000', Japan: '#bc002d',
+      Serbia: '#0077be', Romania: '#c63', Bulgaria: '#884ea0', Netherlands: '#ff9900',
+      Denmark: '#e60026', Ocean: '#99ccee'
     };
 
     const map = document.getElementById('map');
-    const state = { tiles: [] };
-
-    const tileData = [
-      // OCEAN REGIONS grouped as visual shapes
-      { name: 'North Atlantic', owner: 'Ocean', x: 4, y: 1 },
-      { name: 'North Atlantic', owner: 'Ocean', x: 5, y: 2 },
-      { name: 'South Atlantic', owner: 'Ocean', x: 4, y: 4 },
-      { name: 'South Atlantic', owner: 'Ocean', x: 5, y: 5 },
-      { name: 'Western Mediterranean', owner: 'Ocean', x: 6, y: 4 },
-      { name: 'Eastern Mediterranean', owner: 'Ocean', x: 7, y: 4.5 },
-      { name: 'Black Sea', owner: 'Ocean', x: 8.5, y: 3.5 },
-      { name: 'Baltic Sea', owner: 'Ocean', x: 8, y: 1.5 },
-      { name: 'Indian Ocean', owner: 'Ocean', x: 11, y: 5 },
-      { name: 'Indian Ocean', owner: 'Ocean', x: 12, y: 6 },
-      { name: 'North Pacific', owner: 'Ocean', x: 1, y: 1 },
-      { name: 'South Pacific', owner: 'Ocean', x: 2, y: 6 },
-      { name: 'Arctic Ocean', owner: 'Ocean', x: 10, y: 0 },
-
-      // Keep example land tiles
-      { name: 'USA West', owner: 'USA', x: 1, y: 2 },
-      { name: 'USA East', owner: 'USA', x: 3, y: 2 },
-      { name: 'UK', owner: 'UK', x: 6, y: 1 },
-      { name: 'France North', owner: 'France', x: 6, y: 2 },
-      { name: 'Germany North', owner: 'Germany', x: 7, y: 2 },
-      { name: 'Russia West', owner: 'Russia', x: 9, y: 2 },
-      { name: 'India', owner: 'UK', x: 12, y: 4 },
-      { name: 'China', owner: 'Neutral', x: 13, y: 4 },
-      { name: 'Japan', owner: 'Japan', x: 14, y: 3 }
-    ];
+    const container = document.getElementById('container');
+    const state = { tiles: [], scale: 1, translateX: 0, translateY: 0 };
 
     const HEX_WIDTH = 90;
     const HEX_HEIGHT = 78;
     const HEX_HORIZ_OFFSET = HEX_WIDTH * 0.75;
-    const HEX_VERT_OFFSET = HEX_HEIGHT;
+
+    const tileData = [];
+    for (let x = 0; x < 30; x++) {
+      for (let y = 0; y < 20; y++) {
+        tileData.push({
+          name: `(${x},${y})`,
+          owner: 'Neutral',
+          x,
+          y
+        });
+      }
+    }
 
     tileData.forEach((tile, i) => {
       state.tiles[i] = { ...tile, troops: 0, battlefield: '' };
@@ -126,7 +112,7 @@
       hex.dataset.index = i;
 
       const xOffset = tile.x * HEX_HORIZ_OFFSET;
-      const yOffset = tile.y * (HEX_HEIGHT * 0.85);
+      const yOffset = tile.y * HEX_HEIGHT * 0.85 + (tile.x % 2 === 0 ? 0 : HEX_HEIGHT * 0.425);
 
       hex.style.left = `${xOffset}px`;
       hex.style.top = `${yOffset}px`;
@@ -135,6 +121,11 @@
       hex.addEventListener('click', () => editTile(i, hex));
       map.appendChild(hex);
     });
+
+    function updateHexVisual(el, tile) {
+      el.style.background = COLORS[tile.owner] || '#999';
+      el.innerHTML = `<strong>${tile.name}</strong><br>${tile.owner}<br>Troops: ${tile.troops}`;
+    }
 
     function editTile(idx, element) {
       const tile = state.tiles[idx];
@@ -147,16 +138,47 @@
       updateHexVisual(element, tile);
     }
 
-    function updateHexVisual(el, tile) {
-      el.style.background = COLORS[tile.owner] || '#999';
-      el.innerHTML = `<strong>${tile.name}</strong><br>${tile.owner}<br>Troops: ${tile.troops}`;
-    }
+    // Zoom and pan
+    let isPanning = false;
+    let startX, startY;
+
+    container.addEventListener('mousedown', (e) => {
+      isPanning = true;
+      startX = e.clientX - state.translateX;
+      startY = e.clientY - state.translateY;
+      container.style.cursor = 'grabbing';
+    });
+
+    container.addEventListener('mouseup', () => {
+      isPanning = false;
+      container.style.cursor = 'grab';
+    });
+
+    container.addEventListener('mouseleave', () => {
+      isPanning = false;
+      container.style.cursor = 'grab';
+    });
+
+    container.addEventListener('mousemove', (e) => {
+      if (!isPanning) return;
+      state.translateX = e.clientX - startX;
+      state.translateY = e.clientY - startY;
+      map.style.transform = `translate(${state.translateX}px, ${state.translateY}px) scale(${state.scale})`;
+    });
+
+    container.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const scaleAmount = -e.deltaY * 0.001;
+      state.scale += scaleAmount;
+      state.scale = Math.min(Math.max(0.5, state.scale), 3);
+      map.style.transform = `translate(${state.translateX}px, ${state.translateY}px) scale(${state.scale})`;
+    });
 
     document.getElementById('downloadBtn').addEventListener('click', () => {
       const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(state, null, 2));
       const a = document.createElement('a');
       a.href = dataStr;
-      a.download = 'hex-earth-ocean-map.json';
+      a.download = 'hex-earth-expanded.json';
       a.click();
     });
 
