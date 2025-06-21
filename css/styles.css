@@ -3,9 +3,11 @@
   height: 100vh;
   width: 100vw;
   background-color: #f1e9d2;
+  z-index: 1;
+  position: absolute;
 }
 
-/* Country tooltips */
+/* Country label tooltips */
 .country-label {
   font-size: 13px;
   font-weight: bold;
@@ -23,16 +25,6 @@
   font-size: 14px;
   color: #3e2e21;
   padding: 6px;
-}
-
-.popup {
-  font-family: 'Georgia', serif;
-  color: #3e2e21;
-  font-size: 14px;
-  background: #f9f2e4;
-  padding: 4px;
-  border-radius: 4px;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
 }
 
 /* Sidebar */
@@ -55,6 +47,7 @@
   right: 0;
 }
 
+/* Sidebar button */
 #toggle-sidebar {
   position: fixed;
   top: 15px;
