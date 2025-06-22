@@ -3,8 +3,11 @@ const map = L.map('map').setView([30, 10], 2);
 
 // Base map (English map tiles)
 L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
+// Switch to CartoDB Positron tiles to avoid authentication errors
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
   maxZoom: 18,
   attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a>'
+  attribution: '&copy; <a href="https://carto.com/">CartoDB</a>'
 }).addTo(map);
 
 // Initialize draw control
@@ -30,31 +33,3 @@ fetch('countries-1914.geojson')
             layer.bindPopup(`<b>${feature.properties.name}</b><br>Owner: ${newOwner}<br>Troops: ${feature.properties.troops}`).openPopup();
           }
         });
-        layer.bindPopup(`<b>${feature.properties.name}</b><br>Owner: ${feature.properties.owner}<br>Troops: ${feature.properties.troops}`);
-      }
-    });
-
-    geoJsonLayer.eachLayer(layer => {
-      drawnItems.addLayer(layer);
-    });
-  });
-
-// Leaflet.Draw controls
-const drawControl = new L.Control.Draw({
-  edit: {
-    featureGroup: drawnItems,
-    poly: {
-      allowIntersection: false
-    }
-  },
-  draw: false
-});
-map.addControl(drawControl);
-
-// Log edited features
-map.on(L.Draw.Event.EDITED, function (e) {
-  const layers = e.layers;
-  layers.eachLayer(function (layer) {
-    console.log('Edited feature:', layer.toGeoJSON());
-  });
-});
