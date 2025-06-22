@@ -1,23 +1,26 @@
-// Initialize the map and center it on a global view
-const map = L.map('map').setView([20, 0], 2);
+// Initialize map
+const map = L.map('map').setView([30, 10], 2);
 
-// Load natural Earth-style base map
+// Base map (natural Earth style)
 L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
   maxZoom: 18,
   attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a>'
 }).addTo(map);
 
-// Add your historical 1914 overlay image (must be in assets folder)
-const historicalMap = L.imageOverlay('assets/1914_Map.jpg', [[85, -180], [-60, 180]], {
+// Optional: historical overlay
+L.imageOverlay('assets/1914_Map.jpg', [[85, -180], [-60, 180]], {
   opacity: 0.5
-});
-historicalMap.addTo(map);
+}).addTo(map);
 
-// Load GeoJSON for country tiles
+// Initialize draw control
+let drawnItems = new L.FeatureGroup();
+map.addLayer(drawnItems);
+
+// Load GeoJSON
 fetch('countries-1914.geojson')
-  .then(response => response.json())
+  .then(res => res.json())
   .then(data => {
-    L.geoJSON(data, {
+    const geoJsonLayer = L.geoJSON(data, {
       style: {
         color: '#333',
         weight: 1,
@@ -25,10 +28,38 @@ fetch('countries-1914.geojson')
         fillOpacity: 0.5
       },
       onEachFeature: (feature, layer) => {
-        const name = feature.properties.name;
-        const owner = feature.properties.owner;
-        const troops = feature.properties.troops;
-        layer.bindPopup(`<b>${name}</b><br>Owner: ${owner}<br>Troops: ${troops}`);
+        layer.on('click', () => {
+          const newOwner = prompt(`Assign new owner to ${feature.properties.name}:`, feature.properties.owner);
+          if (newOwner) {
+            feature.properties.owner = newOwner;
+            layer.bindPopup(`<b>${feature.properties.name}</b><br>Owner: ${newOwner}<br>Troops: ${feature.properties.troops}`).openPopup();
+          }
+        });
+        layer.bindPopup(`<b>${feature.properties.name}</b><br>Owner: ${feature.properties.owner}<br>Troops: ${feature.properties.troops}`);
       }
-    }).addTo(map);
+    });
+
+    geoJsonLayer.eachLayer(layer => {
+      drawnItems.addLayer(layer);
+    });
   });
+
+// Leaflet.Draw controls
+const drawControl = new L.Control.Draw({
+  edit: {
+    featureGroup: drawnItems,
+    poly: {
+      allowIntersection: false
+    }
+  },
+  draw: false // disable new shapes unless needed
+});
+map.addControl(drawControl);
+
+// Save edits to console (you can export to file/database later)
+map.on(L.Draw.Event.EDITED, function (e) {
+  const layers = e.layers;
+  layers.eachLayer(function (layer) {
+    console.log('Edited feature:', layer.toGeoJSON());
+  });
+});
