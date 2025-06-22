@@ -1,15 +1,10 @@
 // Initialize map
 const map = L.map('map').setView([30, 10], 2);
 
-// Base map (natural Earth style)
+// Base map (natural Earth style, fully visible now)
 L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
   maxZoom: 18,
   attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a>'
-}).addTo(map);
-
-// Optional: historical overlay
-L.imageOverlay('assets/1914_Map.jpg', [[85, -180], [-60, 180]], {
-  opacity: 0.5
 }).addTo(map);
 
 // Initialize draw control
@@ -52,11 +47,11 @@ const drawControl = new L.Control.Draw({
       allowIntersection: false
     }
   },
-  draw: false // disable new shapes unless needed
+  draw: false
 });
 map.addControl(drawControl);
 
-// Save edits to console (you can export to file/database later)
+// Log edited features
 map.on(L.Draw.Event.EDITED, function (e) {
   const layers = e.layers;
   layers.eachLayer(function (layer) {
