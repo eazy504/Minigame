@@ -1,27 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>1914 WW1 Strategy Map</title>
-  <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>1914 World Map - Editable</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Leaflet Draw CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div id="map"></div>
 
-  <div id="sidebar">
-    <h2>Research Tree</h2>
-    <div id="research-content">
-      <p>Select a country to view research options.</p>
-    </div>
-  </div>
-  <button id="toggle-sidebar">☰ Research</button>
-
+  <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="terrain.js"></script>
-  <script src="country-mechanics.js"></script>
-  <script src="research-tree.js"></script>
+
+  <!-- Leaflet Draw JS -->
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+
+  <!-- Main Script -->
   <script src="main.js"></script>
 </body>
 </html>
