@@ -1,58 +1,12 @@
-/* Full-screen map */
-#map {
-  position: absolute;
-  height: 100vh;
-  width: 100vw;
-  background-color: #f1e9d2;
-  z-index: 1;
-}
+/* styles.css */
 
-/* Country labels */
-.country-label {
-  font-size: 13px;
-  font-weight: bold;
-  color: #3a2e1e;
-  text-shadow: 1px 1px 2px #f1e9d2;
-  pointer-events: none;
-}
-
-/* Popups */
-.leaflet-popup-content-wrapper {
-  background-color: #f9f2e4;
-  border-radius: 6px;
-  font-family: 'Georgia', serif;
-  font-size: 14px;
-  color: #3e2e21;
-  padding: 6px;
-}
-
-/* Sidebar */
-#sidebar {
-  position: fixed;
-  top: 0;
-  right: -300px;
-  width: 300px;
+html, body, #map {
   height: 100%;
-  background: #fcf5e6;
-  border-left: 2px solid #cbbfa1;
-  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
-  overflow-y: auto;
-  transition: right 0.3s ease;
-  padding: 20px;
-  z-index: 1000;
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
 }
-#sidebar.open { right: 0; }
-#toggle-sidebar {
-  position: fixed;
-  top: 15px;
-  right: 15px;
-  z-index: 1100;
-  padding: 10px 16px;
-  font-size: 16px;
-  background-color: #a28c6a;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-family: Georgia, serif;
+
+.leaflet-container {
+  background: #e6f2ff; /* fallback in case map tiles fail */
 }
