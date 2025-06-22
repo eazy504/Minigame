@@ -2,9 +2,10 @@
 const map = L.map('map').setView([30, 10], 2);
 
 // Base map (English map tiles)
-L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
+// Switch to CartoDB Positron tiles to avoid authentication errors
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
   maxZoom: 18,
-  attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a>'
+  attribution: '&copy; <a href="https://carto.com/">CartoDB</a>'
 }).addTo(map);
 
 // Initialize draw control
